@@ -210,6 +210,71 @@ pode acessar:
 4. Use o botão "Try it out" para testar os endpoints diretamente
 5. Preencha os parâmetros necessários e clique em "Execute"
 
+### Coleção do Insomnia
+
+Para facilitar o teste da API, foi criada uma coleção completa do Insomnia que inclui todos os endpoints da API com
+exemplos pré-configurados.
+
+#### Arquivo da Coleção
+
+- **Arquivo**: `insomnia-collection.json` (na raiz do projeto)
+- **Descrição**: Coleção completa com todos os endpoints da API, casos de teste e variáveis de ambiente
+
+#### Como Importar no Insomnia
+
+1. Abra o Insomnia
+2. Vá em `Application` → `Preferences` → `Data` → `Import Data`
+3. Selecione o arquivo `insomnia-collection.json` do projeto
+4. A coleção "JWT Validator" será importada com todos os endpoints
+
+#### O que está Incluído na Coleção
+
+**Endpoints Principais:**
+
+- **Validar JWT**: Endpoint principal para validação de tokens
+- **Extrair Claims do JWT**: Endpoint para extração de informações do token
+
+**Casos de Teste:**
+
+- **Validar JWT Inválido**: Teste com token malformado
+- **Validar JWT Vazio**: Teste com entrada vazia
+- **Extrair Claims JWT Inválido**: Teste de extração com token inválido
+
+**Documentação:**
+
+- **OpenAPI Specification**: Acesso à especificação da API em JSON
+- **Swagger UI**: Link direto para a interface do Swagger
+
+**Ambientes Configurados:**
+
+- **Base Environment**: Ambiente local (localhost:8080)
+- **Development**: Ambiente de desenvolvimento
+- **Production**: Ambiente de produção (configurar URL)
+
+#### Variáveis de Ambiente
+
+A coleção inclui as seguintes variáveis pré-configuradas:
+
+- `base_url`: URL base da API
+- `sample_jwt`: JWT de exemplo para testes
+- `valid_jwt_example`: Outro exemplo de JWT válido
+- `invalid_jwt`: Token inválido para testes de erro
+- `empty_jwt`: String vazia para testes de validação
+
+#### Documentação Detalhada
+
+Para instruções completas de uso, exemplos avançados e troubleshooting, consulte:
+
+📖 **[Documentação Completa da Coleção Insomnia](docs/INSOMNIA_COLLECTION.md)**
+
+Esta documentação inclui:
+
+- Guia passo a passo de importação
+- Exemplos de uso detalhados
+- Configuração de ambientes
+- Solução de problemas comuns
+- Casos de teste avançados
+
 ### Endpoints da API
 
 ### `POST /api/jwt/validate`
