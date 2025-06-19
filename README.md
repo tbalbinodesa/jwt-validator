@@ -185,6 +185,33 @@ docker run -p 8080:8080 ghcr.io/seu-usuario/jwt-validator:latest
 
 ## Documentação da API
 
+### Documentação OpenAPI/Swagger
+
+A API possui documentação interativa gerada automaticamente usando OpenAPI 3.0 (Swagger). Após iniciar a aplicação, você
+pode acessar:
+
+#### Swagger UI (Interface Interativa)
+
+- **URL**: `http://localhost:8080/swagger-ui.html`
+- **Descrição**: Interface web interativa onde você pode visualizar todos os endpoints, seus parâmetros, exemplos de
+  requisições e respostas, e até mesmo testar a API diretamente no navegador.
+
+#### Especificação OpenAPI (JSON)
+
+- **URL**: `http://localhost:8080/v3/api-docs`
+- **Descrição**: Especificação completa da API em formato JSON, seguindo o padrão OpenAPI 3.0. Útil para integração com
+  ferramentas de desenvolvimento e geração automática de clientes.
+
+#### Como usar o Swagger UI
+
+1. Acesse `http://localhost:8080/swagger-ui.html` no seu navegador
+2. Explore os endpoints disponíveis na interface
+3. Clique em um endpoint para ver detalhes (parâmetros, exemplos, etc.)
+4. Use o botão "Try it out" para testar os endpoints diretamente
+5. Preencha os parâmetros necessários e clique em "Execute"
+
+### Endpoints da API
+
 ### `POST /api/jwt/validate`
 
 Valida um JWT fornecido.
