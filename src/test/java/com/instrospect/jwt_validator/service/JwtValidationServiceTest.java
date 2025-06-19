@@ -10,8 +10,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class JwtValidationServiceTest {
@@ -125,5 +124,68 @@ class JwtValidationServiceTest {
 
         boolean result = jwtValidationService.validateToken(jwt);
         assertFalse(result);
+    }
+
+    @Test
+    void testExtractClaims_ValidJWT_ShouldReturnClaimsAsJson() {
+        // Create a valid JWT with required claims
+        String jwt = Jwts.builder()
+                .claim("Name", "JohnDoe")
+                .claim("Role", "Admin")
+                .claim("Seed", "7")
+                .signWith(key)
+                .compact();
+
+        String result = jwtValidationService.extractClaims(jwt);
+
+        assertNotNull(result);
+        assertTrue(result.contains("\"Name\":\"JohnDoe\""));
+        assertTrue(result.contains("\"Role\":\"Admin\""));
+        assertTrue(result.contains("\"Seed\":\"7\""));
+        assertTrue(result.startsWith("{"));
+        assertTrue(result.endsWith("}"));
+    }
+
+    @Test
+    void testExtractClaims_InvalidJWT_ShouldReturnErrorJson() {
+        String invalidJwt = "invalid.jwt.token";
+
+        String result = jwtValidationService.extractClaims(invalidJwt);
+
+        assertNotNull(result);
+        assertEquals("{\"error\":\"Token JWT inválido\"}", result);
+    }
+
+    @Test
+    void testExtractClaims_InvalidSignature_ShouldReturnErrorJson() {
+        // Create JWT with different secret
+        SecretKey wrongKey = Keys.hmacShaKeyFor("wrongsecretwrongsecretwrongsecret".getBytes(StandardCharsets.UTF_8));
+        String jwt = Jwts.builder()
+                .claim("Name", "JohnDoe")
+                .claim("Role", "Admin")
+                .claim("Seed", "7")
+                .signWith(wrongKey)
+                .compact();
+
+        String result = jwtValidationService.extractClaims(jwt);
+
+        assertNotNull(result);
+        assertEquals("{\"error\":\"Token JWT inválido\"}", result);
+    }
+
+    @Test
+    void testExtractClaims_EmptyToken_ShouldReturnErrorJson() {
+        String result = jwtValidationService.extractClaims("");
+
+        assertNotNull(result);
+        assertEquals("{\"error\":\"Token JWT inválido\"}", result);
+    }
+
+    @Test
+    void testExtractClaims_NullToken_ShouldReturnErrorJson() {
+        String result = jwtValidationService.extractClaims(null);
+
+        assertNotNull(result);
+        assertEquals("{\"error\":\"Token JWT inválido\"}", result);
     }
 }

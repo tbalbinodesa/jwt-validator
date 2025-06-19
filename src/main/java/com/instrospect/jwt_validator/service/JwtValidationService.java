@@ -65,11 +65,50 @@ public class JwtValidationService {
      * Extrai informações do token JWT.
      *
      * @param token o token JWT
-     * @return as informações extraídas do token
+     * @return as informações extraídas do token em formato JSON
      */
     public String extractClaims(String token) {
-        // TODO: Implementar extração de claims do JWT
-        return null;
+        try {
+            // Verifica se o token é nulo ou vazio
+            if (token == null || token.trim().isEmpty()) {
+                log.error("Token JWT é nulo ou vazio");
+                return "{\"error\":\"Token JWT inválido\"}";
+            }
+
+            SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+            // Parse o JWT e extrai as claims
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            log.info("Claims extraídas com sucesso do JWT");
+
+            // Converte as claims para formato JSON
+            StringBuilder jsonBuilder = new StringBuilder();
+            jsonBuilder.append("{");
+
+            boolean first = true;
+            for (String key : claims.keySet()) {
+                if (!first) {
+                    jsonBuilder.append(",");
+                }
+                jsonBuilder.append("\"").append(key).append("\":\"").append(claims.get(key)).append("\"");
+                first = false;
+            }
+
+            jsonBuilder.append("}");
+            return jsonBuilder.toString();
+
+        } catch (JwtException e) {
+            log.error("Erro ao extrair claims do JWT: {}", e.getMessage());
+            return "{\"error\":\"Token JWT inválido\"}";
+        } catch (Exception e) {
+            log.error("Erro inesperado ao extrair claims do JWT.", e);
+            return "{\"error\":\"Erro interno do servidor\"}";
+        }
     }
 
     private boolean areClaimsValid(Claims claims) {
