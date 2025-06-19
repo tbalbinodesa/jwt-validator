@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  jwt-validator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Para desenvolvimento local com hot reload
+  jwt-validator-dev:
+    image: maven:3.9.6-openjdk-21
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "8080:8080"
+    command: mvn spring-boot:run
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    profiles:
+      - dev

@@ -1,5 +1,8 @@
 # JWT Validator API
 
+[![CI/CD Pipeline](https://github.com/tbalbinodesa/jwt-validator/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/tbalbinodesa/jwt-validator/actions/workflows/ci-cd.yml)
+[![Security Scan](https://github.com/tbalbinodesa/jwt-validator/actions/workflows/ci-cd.yml/badge.svg?event=schedule)](https://github.com/tbalbinodesa/jwt-validator/actions/workflows/ci-cd.yml)
+
 API construída com Spring Boot para validar JWTs (JSON Web Tokens) com base em um conjunto de regras de negócio
 customizadas.
 
@@ -46,6 +49,84 @@ regras:
 
 ---
 
+## CI/CD Pipeline
+
+Este projeto implementa um pipeline completo de CI/CD usando GitHub Actions, seguindo as melhores práticas de DevOps.
+
+### Arquitetura do Pipeline
+
+O pipeline é composto por 5 jobs principais:
+
+1. **Test and Build** - Executa testes unitários e de integração, gera relatórios e constrói o artefato JAR
+2. **Security Scan** - Executa verificação de vulnerabilidades nas dependências usando OWASP Dependency Check
+3. **Build and Push Docker Image** - Constrói e publica a imagem Docker no GitHub Container Registry
+4. **Deploy to Staging** - Deploy automático para ambiente de staging (branch `develop`)
+5. **Deploy to Production** - Deploy automático para ambiente de produção (branch `main`)
+
+### Fluxo de Trabalho
+
+#### Branch Strategy
+
+- **`main`**: Branch de produção - deploys automáticos para produção
+- **`develop`**: Branch de desenvolvimento - deploys automáticos para staging
+- **Feature branches**: Executam apenas testes e validações
+
+#### Triggers
+
+- **Push** para `main` ou `develop`: Executa pipeline completo com deploy
+- **Pull Request** para `main`: Executa testes e validações (sem deploy)
+
+### Funcionalidades do Pipeline
+
+#### ✅ Continuous Integration (CI)
+
+- **Testes Automatizados**: Execução de todos os testes unitários e de integração
+- **Cache de Dependências**: Cache inteligente do Maven para acelerar builds
+- **Relatórios de Teste**: Geração automática de relatórios JUnit
+- **Build de Artefatos**: Construção e upload do JAR como artefato
+- **Verificação de Segurança**: Scan de vulnerabilidades nas dependências
+
+#### 🚀 Continuous Deployment (CD)
+
+- **Containerização**: Build automático de imagens Docker
+- **Registry**: Publicação no GitHub Container Registry (ghcr.io)
+- **Versionamento**: Tags automáticas baseadas em branch e commit SHA
+- **Ambientes Protegidos**: Uso de GitHub Environments para controle de deploy
+- **Smoke Tests**: Testes básicos pós-deploy para validação
+
+#### 🔒 Segurança e Qualidade
+
+- **Dependency Updates**: Dependabot configurado para atualizações automáticas
+- **Security Scanning**: OWASP Dependency Check integrado
+- **Least Privilege**: Permissões mínimas necessárias para cada job
+- **Secrets Management**: Uso seguro de secrets do GitHub
+
+### Configuração dos Ambientes
+
+Para configurar os ambientes de staging e produção:
+
+1. **GitHub Environments**: Configure os environments `staging` e `production` no repositório
+2. **Protection Rules**: Adicione regras de proteção (aprovações, reviewers)
+3. **Secrets**: Configure secrets específicos por ambiente se necessário
+4. **Deploy Scripts**: Customize os comandos de deploy nos jobs correspondentes
+
+### Monitoramento e Observabilidade
+
+- **Artifacts**: JAR e relatórios de segurança são salvos como artifacts
+- **Logs Estruturados**: Logs detalhados de cada etapa do pipeline
+- **Status Badges**: Adicione badges do GitHub Actions ao README
+- **Notifications**: Configure notificações para falhas ou sucessos
+
+### Dependabot
+
+O projeto inclui configuração do Dependabot para:
+
+- **Maven Dependencies**: Atualizações semanais das dependências Java
+- **GitHub Actions**: Atualizações das actions utilizadas no pipeline
+- **Docker**: Atualizações das imagens base do Dockerfile
+
+---
+
 ## Como Executar o Projeto
 
 ### Pré-requisitos
@@ -70,6 +151,20 @@ A aplicação estará disponível em `http://localhost:8080`.
 
 ### Executando com Docker
 
+#### Usando Docker Compose (Recomendado)
+
+1. **Produção**:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Desenvolvimento** (com hot reload):
+   ```bash
+   docker-compose --profile dev up
+   ```
+
+#### Usando Docker diretamente
+
 1. Construa a imagem Docker:
    ```bash
    docker build -t jwt-validator .
@@ -79,6 +174,12 @@ A aplicação estará disponível em `http://localhost:8080`.
    ```bash
    docker run -p 8080:8080 jwt-validator
    ```
+
+#### Usando a imagem do GitHub Container Registry
+
+```bash
+docker run -p 8080:8080 ghcr.io/seu-usuario/jwt-validator:latest
+```
 
 ---
 
