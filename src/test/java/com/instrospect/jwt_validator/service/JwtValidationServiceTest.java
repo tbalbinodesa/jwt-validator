@@ -16,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtValidationServiceTest {
 
     private JwtValidationService jwtValidationService;
-    private String secret = "3Vq#mP9$kL2@nR5*jF8&hX4^wC7!tY6zB1";
     private SecretKey key;
 
     @BeforeEach
     void setUp() {
         jwtValidationService = new JwtValidationService();
+        String secret = "3Vq#mP9$kL2@nR5*jF8&hX4^wC7!tY6zB1";
         ReflectionTestUtils.setField(jwtValidationService, "secret", secret);
         key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
