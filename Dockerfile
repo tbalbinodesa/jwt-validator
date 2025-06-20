@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Estágio 2: Criação da imagem final
-FROM openjdk:21-jdk-slim
+FROM openjdk:26-jdk-slim
 WORKDIR /app
 # Copia o JAR do estágio de build
 COPY --from=build /app/target/*.jar app.jar
