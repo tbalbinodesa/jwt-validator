@@ -1,13 +1,13 @@
-# 🚀 JWT Validator API - Infraestrutura AWS com Terraform
+# Infraestrutura AWS - JWT Validator API
 
-## 📋 Resumo da Implementação
+## Visão Geral
 
-Foi implementada uma infraestrutura completa na AWS usando **OpenTerraform** para hospedar a API JWT Validator. A
-solução segue as melhores práticas de DevOps, segurança e escalabilidade.
+Este documento descreve a infraestrutura AWS completa para hospedar a JWT Validator API usando **Terraform** como
+Infrastructure as Code (IaC).
 
-## 🏗️ Arquitetura Implementada
+## Arquitetura da Solução
 
-### Visão Geral
+### Diagrama de Arquitetura
 
 ```
 Internet → ALB → ECS Fargate Tasks (Private Subnets)
@@ -63,7 +63,7 @@ Internet → ALB → ECS Fargate Tasks (Private Subnets)
 - **Métricas**: CPU (70%) e Memória (80%)
 - **Fargate Spot** disponível para otimização de custos
 
-## 📁 Estrutura dos Arquivos
+## Estrutura dos Arquivos Terraform
 
 ```
 terraform/
@@ -75,7 +75,28 @@ terraform/
 └── README.md                  # Documentação detalhada
 ```
 
-## 🚀 Como Usar
+## Pré-requisitos
+
+### Ferramentas Necessárias
+
+1. **AWS CLI** configurado com credenciais apropriadas
+2. **Terraform** >= 1.0 instalado
+3. **Docker** para build da imagem (opcional)
+4. Permissões AWS para criar os recursos necessários
+
+### Permissões AWS Necessárias
+
+Sua conta/usuário AWS precisa das seguintes permissões:
+
+- EC2 (VPC, Subnets, Security Groups, etc.)
+- ECS (Clusters, Services, Task Definitions)
+- ECR (Repositories)
+- IAM (Roles, Policies)
+- Application Load Balancer
+- Secrets Manager
+- CloudWatch Logs
+
+## Deployment da Infraestrutura
 
 ### Opção 1: Script Automatizado (Recomendado)
 
@@ -94,31 +115,111 @@ cd terraform
 
 ### Opção 2: Comandos Manuais
 
-```bash
-# 1. Configure as variáveis
-cp terraform.tfvars.example terraform.tfvars
-# Edite terraform.tfvars com suas configurações
+#### 1. Preparação
 
-# 2. Inicialize o Terraform
+```bash
+# Clone o repositório (se ainda não fez)
+git clone <repository-url>
+cd jwt-validator/terraform
+
+# Copie o arquivo de exemplo e configure suas variáveis
+cp terraform.tfvars.example terraform.tfvars
+```
+
+#### 2. Configuração das Variáveis
+
+Edite o arquivo `terraform.tfvars` com suas configurações:
+
+```hcl
+# Configuração básica
+aws_region   = "us-east-1"
+environment  = "dev"
+project_name = "jwt-validator"
+
+# Configuração de segurança
+jwt_secret = "seu-jwt-secret-super-seguro-aqui"
+
+# Configuração de recursos
+task_cpu      = 512
+task_memory   = 1024
+desired_count = 2
+```
+
+#### 3. Inicialização do Terraform
+
+```bash
+# Inicialize o Terraform
 terraform init
+
+# Valide a configuração
+terraform validate
+
+# Visualize o plano de execução
 terraform plan
+```
+
+#### 4. Deploy da Infraestrutura
+
+```bash
+# Aplique a configuração
 terraform apply
 
-# 3. Build e push da imagem
-ECR_URL=$(terraform output -raw ecr_repository_url)
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_URL
-docker build -t jwt-validator ..
-docker tag jwt-validator:latest $ECR_URL:latest
-docker push $ECR_URL:latest
+# Confirme com 'yes' quando solicitado
+```
 
-# 4. Atualize o ECS service
+#### 5. Build e Push da Imagem Docker
+
+Após o deploy da infraestrutura, você precisa fazer o build e push da imagem:
+
+```bash
+# Obtenha a URL do ECR repository
+ECR_URL=$(terraform output -raw ecr_repository_url)
+
+# Configure o Docker para usar o ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_URL
+
+# Volte para o diretório raiz do projeto
+cd ..
+
+# Build da imagem
+docker build -t jwt-validator .
+
+# Tag da imagem
+docker tag jwt-validator:latest $ECR_URL:latest
+
+# Push da imagem
+docker push $ECR_URL:latest
+```
+
+#### 6. Atualização do ECS Service
+
+```bash
+# Volte para o diretório terraform
+cd terraform
+
+# Force uma nova implantação do ECS service
 aws ecs update-service \
   --cluster $(terraform output -raw ecs_cluster_id) \
   --service $(terraform output -raw ecs_service_name) \
   --force-new-deployment
 ```
 
-## ⚙️ Configurações por Ambiente
+## Verificação do Deploy
+
+Após o deploy, você pode verificar se tudo está funcionando:
+
+```bash
+# Obtenha a URL da aplicação
+terraform output application_url
+
+# Teste o health check
+curl $(terraform output -raw health_check_url)
+
+# Acesse a documentação da API
+echo "Swagger UI: $(terraform output -raw swagger_ui_url)"
+```
+
+## Configurações por Ambiente
 
 ### 🧪 Desenvolvimento (Custo Otimizado)
 
@@ -128,16 +229,19 @@ task_cpu          = 256
 task_memory       = 512
 desired_count     = 1
 enable_nat_gateway = false  # Economia de ~$32/mês
+log_retention_days = 3
 ```
 
 ### 🎭 Staging
 
 ```hcl
-environment        = "staging"
-task_cpu          = 512
-task_memory       = 1024
-desired_count     = 2
-single_nat_gateway = true   # Economia de ~$32/mês
+environment             = "staging"
+task_cpu                = 512
+task_memory             = 1024
+desired_count           = 2
+enable_nat_gateway      = true
+single_nat_gateway      = true   # Economia de ~$32/mês
+log_retention_days      = 7
 ```
 
 ### 🏭 Produção
@@ -149,11 +253,14 @@ task_memory                = 2048
 desired_count              = 3
 min_capacity               = 2
 max_capacity               = 20
+enable_nat_gateway         = true
+single_nat_gateway         = false
+log_retention_days         = 30
 enable_container_insights  = true
 enable_deletion_protection = true
 ```
 
-## 💰 Estimativa de Custos
+## Estimativa de Custos
 
 ### Ambiente de Desenvolvimento
 
@@ -172,7 +279,19 @@ enable_deletion_protection = true
 - **Secrets Manager**: ~$0.40/mês
 - **Total**: ~$150-220/mês
 
-## 🔒 Segurança Implementada
+### Otimização de Custos para Desenvolvimento
+
+Para reduzir custos em ambiente de desenvolvimento:
+
+```hcl
+# No terraform.tfvars
+enable_nat_gateway = false  # Remove NAT Gateway
+task_cpu          = 256     # Reduz CPU
+task_memory       = 512     # Reduz memória
+desired_count     = 1       # Apenas 1 task
+```
+
+## Segurança Implementada
 
 ### ✅ Boas Práticas Aplicadas
 
@@ -189,7 +308,27 @@ enable_deletion_protection = true
 - **IAM Policies**: Permissões granulares
 - **VPC Flow Logs**: Auditoria de tráfego (opcional)
 
-## 📊 Monitoramento e Observabilidade
+### Configurações de Segurança Adicionais
+
+Para produção, considere:
+
+```hcl
+# Restringir acesso por IP
+allowed_cidr_blocks = ["10.0.0.0/8", "172.16.0.0/12"]
+
+# Configurar domínio personalizado com HTTPS
+domain_name     = "api.seudominio.com"
+certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/seu-cert-id"
+
+# WAF para proteção adicional
+enable_waf = true
+
+# Backup automatizado
+enable_backup = true
+backup_retention_days = 30
+```
+
+## Monitoramento e Observabilidade
 
 ### 📈 Métricas Disponíveis
 
@@ -202,15 +341,20 @@ enable_deletion_protection = true
 
 ```bash
 # Visualizar logs em tempo real
-aws logs tail /ecs/jwt-validator --follow
+aws logs tail $(terraform output -raw cloudwatch_log_group_name) --follow
 
 # Logs específicos por task
 aws logs filter-log-events \
   --log-group-name /ecs/jwt-validator \
   --filter-pattern "ERROR"
+
+# ECS Service Status
+aws ecs describe-services \
+  --cluster $(terraform output -raw ecs_cluster_id) \
+  --services $(terraform output -raw ecs_service_name)
 ```
 
-## 🔧 Operações Comuns
+## Operações Comuns
 
 ### 🔄 Atualizar Aplicação
 
@@ -232,19 +376,45 @@ curl $(terraform output -raw health_check_url)
 
 ### 🔍 Troubleshooting
 
+#### Problemas Comuns
+
+1. **ECS Tasks não iniciam**
+   ```bash
+   # Verifique os logs
+   aws logs tail /ecs/jwt-validator --follow
+   
+   # Verifique o status das tasks
+   aws ecs list-tasks --cluster jwt-validator-cluster
+   ```
+
+2. **Health Check falhando**
+   ```bash
+   # Teste diretamente o endpoint
+   curl http://ALB-DNS-NAME/actuator/health
+   
+   # Verifique se a aplicação está rodando na porta 8080
+   ```
+
+3. **Imagem não encontrada**
+   ```bash
+   # Verifique se a imagem foi enviada para o ECR
+   aws ecr list-images --repository-name jwt-validator
+   ```
+
+### Logs Úteis
+
 ```bash
 # Logs da aplicação
 aws logs tail /ecs/jwt-validator --follow
 
-# Tasks em execução
-aws ecs list-tasks --cluster jwt-validator-cluster
+# Eventos do ECS service
+aws ecs describe-services --cluster jwt-validator-cluster --services jwt-validator
 
-# Status do target group
-aws elbv2 describe-target-health \
-  --target-group-arn $(terraform output -raw target_group_arn)
+# Status do ALB target group
+aws elbv2 describe-target-health --target-group-arn TARGET-GROUP-ARN
 ```
 
-## 🌟 Benefícios da Solução
+## Benefícios da Solução
 
 ### 🚀 **Escalabilidade**
 
@@ -277,7 +447,7 @@ aws elbv2 describe-target-health \
 - Rolling deployments sem downtime
 - Versionamento de imagens no ECR
 
-## 📚 Próximos Passos
+## Próximos Passos
 
 ### 🔧 Melhorias Opcionais
 
@@ -287,39 +457,35 @@ aws elbv2 describe-target-health \
 4. **Backup**: Implementar backup automatizado
 5. **Multi-Region**: Expandir para múltiplas regiões
 
-### 🎯 Configurações Avançadas
+## Limpeza da Infraestrutura
 
-```hcl
-# HTTPS com domínio personalizado
-domain_name     = "api.seudominio.com"
-certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
+Para remover toda a infraestrutura:
 
-# WAF para proteção adicional
-enable_waf = true
+```bash
+# ATENÇÃO: Isso removerá TODOS os recursos criados
+terraform destroy
 
-# Backup automatizado
-enable_backup = true
-backup_retention_days = 30
+# Confirme com 'yes' quando solicitado
 ```
 
-## 🤝 Suporte e Contribuição
+## Recursos Adicionais
 
-### 📞 Suporte
+### Documentação
 
-- Documentação completa em `terraform/README.md`
-- Logs detalhados para troubleshooting
-- Script de deployment com verificações automáticas
+- [Documentação do Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- [AWS ECS Documentation](https://docs.aws.amazon.com/ecs/)
+- [AWS Fargate Documentation](https://docs.aws.amazon.com/fargate/)
+- [Spring Boot on AWS](https://spring.io/guides/gs/spring-boot-docker/)
 
-### 🔄 Contribuição
+### Suporte
 
-1. Fork do repositório
-2. Criar branch para feature
-3. Testar mudanças
-4. Submeter pull request
+Para questões relacionadas à infraestrutura, consulte:
 
----
+- **Documentação detalhada**: `terraform/README.md`
+- **Logs detalhados** para troubleshooting
+- **Script de deployment** com verificações automáticas
 
-## ✅ Conclusão
+## Conclusão
 
 A infraestrutura AWS foi implementada com sucesso usando Terraform, fornecendo:
 
