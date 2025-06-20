@@ -1,5 +1,5 @@
 # Estágio 1: Build da aplicação com Maven
-FROM maven:3.9.6-openjdk-21 AS build
+FROM maven:3.9-amazoncorretto-21 AS build
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
