@@ -1,80 +1,102 @@
-# Documentação da API - JWT Validator
+# API Reference - JWT Validator
 
-## Visão Geral
+## 📋 Visão Geral
 
-A JWT Validator API expõe endpoints REST para validação e extração de informações de JSON Web Tokens (JWTs).
+Esta documentação fornece especificações completas dos endpoints REST da JWT Validator API, incluindo exemplos de
+requisições, respostas e códigos de erro.
 
-## Base URL
+## 🌐 Base URLs
 
-- **Local**: `http://localhost:8080`
-- **Produção**: `https://your-production-domain.com`
+| Ambiente     | URL                               | Descrição             |
+|--------------|-----------------------------------|-----------------------|
+| **Local**    | `http://localhost:8080`           | Desenvolvimento local |
+| **Staging**  | `https://staging.your-domain.com` | Ambiente de testes    |
+| **Produção** | `https://api.your-domain.com`     | Ambiente de produção  |
 
-## Autenticação
+## 🔓 Autenticação
 
-Esta API não requer autenticação para uso dos endpoints de validação.
+Esta API **não requer autenticação** para os endpoints de validação. Todos os endpoints são públicos e podem ser
+acessados diretamente.
 
-## Endpoints
+## 🚀 API Endpoints
 
-### 1. Validar JWT
+### 1. 🔍 Validar JWT
 
 Valida se um JWT atende a todas as regras de negócio definidas.
 
 #### `POST /api/jwt/validate`
 
-**Request Body:**
+**📥 Request**
+
+| Campo | Tipo   | Obrigatório | Descrição                     |
+|-------|--------|-------------|-------------------------------|
+| `jwt` | string | ✅           | JSON Web Token a ser validado |
 
 ```json
 {
-  "jwt": "string"
+  "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNyIsIk5hbWUiOiJKb2huRG9lIn0.signature"
 }
 ```
 
-**Parâmetros:**
+**📤 Response**
 
-- `jwt` (string, obrigatório): O JSON Web Token a ser validado
+| Status | Descrição        | Response Body          |
+|--------|------------------|------------------------|
+| `200`  | Sucesso          | `{"isValid": boolean}` |
+| `400`  | Request inválido | `{"error": "string"}`  |
+| `500`  | Erro interno     | `{"error": "string"}`  |
 
-**Response (200 OK):**
-
+**✅ Exemplo de Sucesso:**
 ```json
 {
   "isValid": true
 }
 ```
 
-**Campos de Resposta:**
+**❌ Exemplo de Erro:**
 
-- `isValid` (boolean): `true` se o JWT é válido, `false` caso contrário
+```json
+{
+  "isValid": false
+}
+```
 
-#### Exemplo com cURL
-
+**🔧 Exemplo com cURL:**
 ```bash
 curl -X POST http://localhost:8080/api/jwt/validate \
   -H "Content-Type: application/json" \
-  -d '{
-    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNyIsIk5hbWUiOiJKb2huRG9lIn0.B9QzPb_jzWlOvXLFiOzrKbF8yVHhxB7wTVHjF8yVHhx"
-  }'
+  -d '{"jwt": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNyIsIk5hbWUiOiJKb2huRG9lIn0.signature"}'
 ```
 
-### 2. Extrair Claims do JWT
+---
+
+### 2. 📋 Extrair Claims do JWT
 
 Extrai todas as claims de um JWT fornecido.
 
 #### `POST /api/jwt/extract-claims`
 
-**Request Body:**
+**📥 Request**
+
+| Campo | Tipo   | Obrigatório | Descrição                                |
+|-------|--------|-------------|------------------------------------------|
+| `jwt` | string | ✅           | JSON Web Token do qual extrair as claims |
 
 ```json
 {
-  "jwt": "string"
+  "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNyIsIk5hbWUiOiJKb2huRG9lIn0.signature"
 }
 ```
 
-**Parâmetros:**
+**📤 Response**
 
-- `jwt` (string, obrigatório): O JSON Web Token do qual extrair as claims
+| Status | Descrição        | Response Body            |
+|--------|------------------|--------------------------|
+| `200`  | Sucesso          | Claims extraídas ou erro |
+| `400`  | Request inválido | `{"error": "string"}`    |
+| `500`  | Erro interno     | `{"error": "string"}`    |
 
-**Response (200 OK) - Sucesso:**
-
+**✅ Exemplo de Sucesso:**
 ```json
 {
   "Name": "JohnDoe",
@@ -83,55 +105,70 @@ Extrai todas as claims de um JWT fornecido.
 }
 ```
 
-**Response (200 OK) - Erro:**
-
+**❌ Exemplo de Erro:**
 ```json
 {
   "error": "Token JWT inválido"
 }
 ```
 
-#### Exemplo com cURL
-
+**🔧 Exemplo com cURL:**
 ```bash
 curl -X POST http://localhost:8080/api/jwt/extract-claims \
   -H "Content-Type: application/json" \
-  -d '{
-    "jwt": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNyIsIk5hbWUiOiJKb2huRG9lIn0.B9QzPb_jzWlOvXLFiOzrKbF8yVHhxB7wTVHjF8yVHhx"
-  }'
+  -d '{"jwt": "eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNyIsIk5hbWUiOiJKb2huRG9lIn0.signature"}'
 ```
 
-## Regras de Validação
+---
 
-Um JWT é considerado **válido** quando atende a **todas** as seguintes regras:
+### 3. 🔍 Health Check
 
-### 1. Estrutura e Assinatura Válidas
+Verifica o status e saúde da aplicação.
 
-- Deve ser um JWT bem formado (header.payload.signature)
-- A assinatura deve ser válida usando o secret configurado
+#### `GET /actuator/health`
 
-### 2. Exatamente 3 Claims
+**📤 Response**
 
-- Deve conter **apenas** as claims: `Name`, `Role` e `Seed`
-- Não pode ter claims adicionais ou ausentes
+```json
+{
+  "status": "UP"
+}
+```
 
-### 3. Validação da Claim `Name`
+**🔧 Exemplo com cURL:**
 
-- ❌ **Não pode conter números**: Apenas letras e caracteres especiais
-- ✅ **Tamanho máximo**: 256 caracteres
-- ✅ **Não pode ser vazia**
+```bash
+curl -X GET http://localhost:8080/actuator/health
+```
 
-### 4. Validação da Claim `Role`
+---
 
-- Deve ser **exatamente** um dos valores:
-    - `Admin`
-    - `Member`
-    - `External`
+### 4. 📖 Documentação OpenAPI
 
-### 5. Validação da Claim `Seed`
+Acessa a especificação OpenAPI da API.
 
-- Deve ser um **número primo**
-- Aceita valores numéricos como string ou number
+#### `GET /v3/api-docs`
+
+**📤 Response:** Especificação OpenAPI em formato JSON
+
+**🔧 Exemplo com cURL:**
+
+```bash
+curl -X GET http://localhost:8080/v3/api-docs
+```
+
+## 📋 Regras de Validação
+
+Para informações detalhadas sobre as regras de validação de JWT, consulte a seção **"📋 Regras de Validação"**
+no [README.md](../README.md#-regras-de-validação).
+
+### Resumo das Validações
+
+- ✅ **Estrutura válida**: JWT bem formado com assinatura válida
+- ✅ **Exatamente 3 claims**: Apenas `Name`, `Role` e `Seed`
+- ✅ **Name sem números**: Não pode conter caracteres numéricos (máx. 256 chars)
+- ✅ **Role válida**: Deve ser `Admin`, `Member` ou `External`
+- ✅ **Seed primo**: Deve ser um número primo
 
 ## Exemplos de Tokens
 
@@ -202,80 +239,70 @@ eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJTZWVkIjoiNyIsIk5hbWUiOiJKb2huRG9lIn0
 }
 ```
 
-## Códigos de Status HTTP
+## 📊 Códigos de Status HTTP
 
-| Código | Descrição             | Quando Ocorre                                        |
-|--------|-----------------------|------------------------------------------------------|
-| 200    | OK                    | Requisição processada com sucesso                    |
-| 400    | Bad Request           | JWT ausente, vazio ou formato de requisição inválido |
-| 500    | Internal Server Error | Erro interno do servidor                             |
+| Código | Status                   | Descrição                         | Quando Ocorre                    |
+|--------|--------------------------|-----------------------------------|----------------------------------|
+| `200`  | ✅ OK                     | Requisição processada com sucesso | Validação ou extração realizada  |
+| `400`  | ❌ Bad Request            | Dados de entrada inválidos        | JWT ausente, vazio ou malformado |
+| `500`  | ⚠️ Internal Server Error | Erro interno do servidor          | Falha na aplicação               |
 
-## Documentação Interativa
+## 🧪 Testando a API
 
-### Swagger UI
+### 🌐 Swagger UI (Recomendado)
 
-- **URL**: `http://localhost:8080/swagger-ui.html`
-- **Descrição**: Interface web interativa para testar a API
-- **Funcionalidades**:
-    - Visualizar todos os endpoints
-    - Testar requisições diretamente no navegador
-    - Ver exemplos de request/response
-    - Baixar especificação OpenAPI
+Acesse a documentação interativa em: **[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**
 
-### Especificação OpenAPI
+**Funcionalidades:**
 
-- **URL**: `http://localhost:8080/v3/api-docs`
-- **Formato**: JSON seguindo OpenAPI 3.0
-- **Uso**: Integração com ferramentas de desenvolvimento
+- ✅ Visualizar todos os endpoints
+- ✅ Testar requisições diretamente no navegador
+- ✅ Ver exemplos de request/response
+- ✅ Baixar especificação OpenAPI
 
-## Testando a API
+### 🧪 Coleção Insomnia
 
-### 1. Usando Swagger UI
+Para testes avançados, consulte: **[Testes com Insomnia](INSOMNIA_COLLECTION.md)**
 
-1. Acesse `http://localhost:8080/swagger-ui.html`
-2. Clique no endpoint desejado
-3. Clique em "Try it out"
-4. Preencha os parâmetros
-5. Clique em "Execute"
+**Inclui:**
 
-### 2. Usando Insomnia
+- ✅ Coleção pré-configurada
+- ✅ Casos de teste prontos
+- ✅ Variáveis de ambiente
+- ✅ Cenários de erro
 
-Consulte a **[Documentação da Coleção Insomnia](INSOMNIA_COLLECTION.md)** para:
+### 🔧 Linha de Comando (cURL)
 
-- Importar coleção pré-configurada
-- Casos de teste prontos
-- Variáveis de ambiente
-- Exemplos avançados
+Consulte os exemplos de cURL em cada endpoint acima.
 
-### 3. Usando cURL
-
-Veja os exemplos de cURL acima para cada endpoint.
-
-### 4. Health Check
+### 🔍 Health Check Rápido
 
 ```bash
 curl http://localhost:8080/actuator/health
+# Resposta esperada: {"status":"UP"}
 ```
 
-## Monitoramento e Logs
+## 📈 Monitoramento
 
-### Logs da Aplicação
+### 📋 Endpoints de Monitoramento
 
-A aplicação registra logs detalhados para cada validação:
+| Endpoint            | Descrição                | Uso           |
+|---------------------|--------------------------|---------------|
+| `/actuator/health`  | Status da aplicação      | Health checks |
+| `/actuator/info`    | Informações da aplicação | Metadados     |
+| `/actuator/metrics` | Métricas da aplicação    | Monitoramento |
+
+### 📝 Logs da Aplicação
+
+A aplicação registra logs estruturados para cada operação:
 
 ```
-INFO  - JWT validation successful for token: eyJ...
-WARN  - JWT validation failed: Name contains numeric characters
-ERROR - JWT validation failed: Invalid signature
+[INFO ] JWT validation successful for token: eyJ...
+[WARN ] JWT validation failed: Name contains numeric characters
+[ERROR] JWT validation failed: Invalid signature
 ```
 
-### Métricas (Actuator)
-
-- **Health**: `/actuator/health`
-- **Info**: `/actuator/info`
-- **Metrics**: `/actuator/metrics`
-
-## Limitações e Considerações
+## ⚠️ Limitações e Considerações
 
 ### Performance
 

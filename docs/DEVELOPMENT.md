@@ -1,112 +1,130 @@
-# Guia de Desenvolvimento - JWT Validator API
+# 🛠️ Guia de Desenvolvimento - JWT Validator API
 
-## Configuração do Ambiente de Desenvolvimento
+## 🚀 Setup do Ambiente de Desenvolvimento
 
-### Pré-requisitos
+### 📋 Pré-requisitos
 
-- **Java 21** ou superior
-- **Maven 3.8** ou superior
-- **Docker** e **Docker Compose**
-- **Git**
-- **IDE** (IntelliJ IDEA, Eclipse, VS Code)
+| Ferramenta | Versão Mínima | Descrição                       |
+|------------|---------------|---------------------------------|
+| **Java**   | 21+           | JDK para desenvolvimento        |
+| **Maven**  | 3.8+          | Gerenciamento de dependências   |
+| **Docker** | 20.10+        | Containerização                 |
+| **Git**    | 2.30+         | Controle de versão              |
+| **IDE**    | -             | IntelliJ IDEA, VS Code, Eclipse |
 
-### Setup Inicial
+### ⚡ Setup Rápido
 
 ```bash
-# 1. Clone o repositório
+# 1. Clone e navegue para o projeto
 git clone https://github.com/seu-usuario/jwt-validator.git
 cd jwt-validator
 
-# 2. Compile o projeto
-mvn clean compile
+# 2. Compile e teste
+mvn clean compile test
 
-# 3. Execute os testes
-mvn test
-
-# 4. Execute a aplicação
+# 3. Execute a aplicação
 mvn spring-boot:run
+
+# 4. Verifique se está funcionando
+curl http://localhost:8080/actuator/health
 ```
 
-### Configuração da IDE
+**✅ Aplicação rodando em**: `http://localhost:8080`
 
-#### IntelliJ IDEA
+### 🔧 Configuração da IDE
 
-1. Importe o projeto como Maven project
-2. Configure o SDK para Java 21
-3. Instale os plugins recomendados:
-    - Spring Boot
-    - Lombok (se usado)
-    - SonarLint
+#### IntelliJ IDEA (Recomendado)
+
+```bash
+# 1. Importe o projeto
+File → Open → Selecione o diretório do projeto
+
+# 2. Configure o SDK
+File → Project Structure → Project → SDK: Java 21
+
+# 3. Plugins recomendados
+Settings → Plugins → Install:
+```
+
+| Plugin          | Descrição                      |
+|-----------------|--------------------------------|
+| **Spring Boot** | Suporte para Spring Boot       |
+| **SonarLint**   | Análise de qualidade de código |
+| **GitToolBox**  | Melhorias para Git             |
 
 #### VS Code
 
-1. Instale as extensões:
-    - Extension Pack for Java
-    - Spring Boot Extension Pack
-    - REST Client
-
-## Estrutura do Projeto
-
-```
-src/
-├── main/
-│   ├── java/com/instrospect/jwt_validator/
-│   │   ├── JwtValidatorApplication.java    # Classe principal
-│   │   ├── config/
-│   │   │   └── OpenApiConfig.java          # Configuração Swagger/OpenAPI
-│   │   ├── controller/
-│   │   │   └── JwtController.java          # Controladores REST
-│   │   ├── dto/
-│   │   │   ├── JwtRequest.java             # DTO de requisição
-│   │   │   └── ValidationResponse.java     # DTO de resposta
-│   │   ├── service/
-│   │   │   └── JwtValidationService.java   # Lógica de negócio
-│   │   └── util/
-│   │       └── PrimeUtil.java              # Utilitários (números primos)
-│   └── resources/
-│       └── application.properties          # Configurações da aplicação
-└── test/
-    └── java/com/instrospect/jwt_validator/
-        ├── JwtValidatorApplicationTests.java           # Testes de contexto
-        ├── OpenApiDocumentationTest.java              # Testes de documentação
-        ├── OpenApiStructureTest.java                  # Testes de estrutura OpenAPI
-        ├── controller/
-        │   └── JwtControllerIntegrationTest.java       # Testes de integração
-        ├── service/
-        │   └── JwtValidationServiceTest.java           # Testes unitários do serviço
-        └── util/
-            └── PrimeUtilTest.java                      # Testes unitários dos utilitários
+```bash
+# Extensões recomendadas
+code --install-extension vscjava.vscode-java-pack
+code --install-extension vmware.vscode-spring-boot
+code --install-extension humao.rest-client
 ```
 
-## Executando Testes
+## 📁 Arquitetura do Código
 
-### Todos os Testes
+### 🏗️ Estrutura de Pacotes
+
+```
+src/main/java/com/instrospect/jwt_validator/
+├── 🚀 JwtValidatorApplication.java     # Classe principal Spring Boot
+├── ⚙️  config/
+│   └── OpenApiConfig.java             # Configuração Swagger/OpenAPI
+├── 🎮 controller/
+│   └── JwtController.java             # Endpoints REST
+├── 📦 dto/
+│   ├── JwtRequest.java                # Request DTO
+│   └── ValidationResponse.java        # Response DTO
+├── 🧠 service/
+│   └── JwtValidationService.java      # Lógica de negócio
+└── 🔧 util/
+    └── PrimeUtil.java                 # Utilitários (números primos)
+```
+
+### 🧪 Estrutura de Testes
+
+```
+src/test/java/com/instrospect/jwt_validator/
+├── 🏁 JwtValidatorApplicationTests.java        # Testes de contexto
+├── 📖 OpenApiDocumentationTest.java           # Testes de documentação
+├── 📋 OpenApiStructureTest.java               # Testes de estrutura OpenAPI
+├── 🎮 controller/
+│   └── JwtControllerIntegrationTest.java      # Testes de integração
+├── 🧠 service/
+│   └── JwtValidationServiceTest.java          # Testes unitários do serviço
+└── 🔧 util/
+    └── PrimeUtilTest.java                     # Testes unitários dos utilitários
+```
+
+## 🧪 Executando Testes
+
+### 🚀 Comandos Principais
+
+| Comando                              | Descrição                   | Uso                      |
+|--------------------------------------|-----------------------------|--------------------------|
+| `mvn test`                           | Executa todos os testes     | Verificação completa     |
+| `mvn test -Dtest="*Test"`            | Apenas testes unitários     | Desenvolvimento rápido   |
+| `mvn test -Dtest="*IntegrationTest"` | Apenas testes de integração | Verificação de endpoints |
+| `mvn jacoco:report`                  | Relatório de cobertura      | Análise de qualidade     |
+
+### 🎯 Testes Específicos
 
 ```bash
-mvn test
-```
-
-### Testes Específicos
-
-```bash
-# Testes unitários apenas
-mvn test -Dtest="*Test"
-
-# Testes de integração apenas
-mvn test -Dtest="*IntegrationTest"
-
-# Teste específico
+# Teste específico por classe
 mvn test -Dtest="JwtValidationServiceTest"
 
-# Método específico
+# Teste específico por método
 mvn test -Dtest="JwtValidationServiceTest#shouldValidateValidJwt"
+
+# Múltiplos testes
+mvn test -Dtest="JwtValidationServiceTest,PrimeUtilTest"
 ```
 
-### Cobertura de Testes
+### 📊 Cobertura de Testes
 
 ```bash
 # Gerar relatório de cobertura
-mvn jacoco:report
+mvn clean test jacoco:report
 
 # Visualizar relatório
 open target/site/jacoco/index.html
